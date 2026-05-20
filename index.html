@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIBot IA - Assistente Futurista</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <!-- Background Layers -->
+    <div class="stars-layer-1"></div>
+    <div class="stars-layer-2"></div>
+    <div class="stars-layer-3"></div>
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+
+    <div class="hologram-grid"></div>
+
+    <!-- Main App Container -->
+    <div class="container" id="app-container">
+        
+        <div class="header">
+            <div class="status-indicator">
+                <span class="dot"></span> Online e Operante
+            </div>
+            <div id="hora">00:00:00</div>
+        </div>
+
+        <div class="bot-area">
+            <div class="robo" id="robo-avatar">🤖</div>
+            <h1>PIBot <span class="badge">v2.0</span></h1>
+            <div class="sub">Projeto Integrador • Tecnologias Avançadas</div>
+        </div>
+
+        <div class="media-container" id="media-container">
+            <!-- Dynamic Content Injected Here -->
+            <img id="media-image" src="" alt="Mídia Contextual" style="display: none;">
+            <video id="media-video" autoplay loop muted playsinline style="display: none;"></video>
+        </div>
+
+        <div id="resposta" class="response-box">
+            Iniciando sistemas... Olá, eu sou o PIBot. Como posso ajudar na nossa apresentação?
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="texto" placeholder="Digite seu comando ou pergunta..." autocomplete="off">
+            <button id="btn-enviar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/bot.js"></script>
+</body>
+</html>

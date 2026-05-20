@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIBot - Dashboard Administrativo</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/admin.css">
+</head>
+<body>
+    <!-- Background Layers -->
+    <div class="stars-layer-1"></div>
+    <div class="stars-layer-2"></div>
+    <div class="stars-layer-3"></div>
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+
+    <div class="hologram-grid"></div>
+
+    <div class="admin-container">
+        
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="brand-section">
+                <h1 class="brand-title">PIBot Admin</h1>
+                <span class="badge">v2.0</span>
+            </div>
+            <div class="nav-buttons">
+                <a href="/" class="btn-back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Voltar ao Bot
+                </a>
+            </div>
+        </header>
+
+        <!-- Status Ribbon -->
+        <div id="status-ribbon" class="status-ribbon">
+            <div>
+                <span class="status-dot"></span>
+                Status de Segurança: <span id="status-text">Online e Operante</span>
+            </div>
+            <div id="status-time">--:--:--</div>
+        </div>
+
+        <!-- Stats Cards Grid -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-title">Perguntas Processadas</span>
+                <span id="stat-total" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Respondidas por IA</span>
+                <span id="stat-ia" class="stat-value text-primary">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Intenções Locais</span>
+                <span id="stat-local" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Modo Fallback</span>
+                <span id="stat-fallback" class="stat-value">0</span>
+            </div>
+            <div class="stat-card threats">
+                <span class="stat-title">Ataques Evitados</span>
+                <span id="stat-attacks" class="stat-value">0</span>
+            </div>
+        </section>
+
+        <!-- Panels Section -->
+        <section class="panels-container">
+            
+            <!-- Conversas Log -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        Histórico de Interações
+                    </h2>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Horário</th>
+                                <th style="width: 35%;">Mensagem do Usuário</th>
+                                <th style="width: 35%;">Resposta do PIBot</th>
+                                <th style="width: 15%;">Origem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-logs">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Buscando interações...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Incidentes de Segurança Log -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" style="color: var(--alert);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Incidentes e Ações de Segurança
+                    </h2>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Horário</th>
+                                <th style="width: 35%;">Termo/Código</th>
+                                <th style="width: 20%;">IP Origem</th>
+                                <th style="width: 20%;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-incidents">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Buscando incidentes...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        // Generate Universe Stars (Parallax Background)
+        function createUniverse() {
+            const layer1 = document.querySelector('.stars-layer-1');
+            const layer2 = document.querySelector('.stars-layer-2');
+            const layer3 = document.querySelector('.stars-layer-3');
+
+            for (let i = 0; i < 80; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                // Inline styling for layout purposes
+                star.style.position = 'absolute';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+
+                let size = Math.random() * 3;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random();
+
+                if (size < 1) {
+                    layer3.appendChild(star);
+                } else if (size < 2) {
+                    layer2.appendChild(star);
+                } else {
+                    layer1.appendChild(star);
+                }
+            }
+        }
+
+        // Format DateTime string to readable format
+        function formatDateTime(dbDateStr) {
+            if (!dbDateStr) return '';
+            // SQLite timestamp format is: YYYY-MM-DD HH:MM:SS
+            // Convert to Local Time
+            try {
+                // Split YYYY-MM-DD and HH:MM:SS
+                const parts = dbDateStr.split(' ');
+                if (parts.length === 2) {
+                    const dateParts = parts[0].split('-');
+                    const timeParts = parts[1].split(':');
+                    
+                    // Create date object (Month is 0-indexed)
+                    const d = new Date(
+                        parseInt(dateParts[0]), 
+                        parseInt(dateParts[1]) - 1, 
+                        parseInt(dateParts[2]),
+                        parseInt(timeParts[0]),
+                        parseInt(timeParts[1]),
+                        parseInt(timeParts[2].split('.')[0])
+                    );
+                    return d.toLocaleTimeString('pt-BR') + ' - ' + d.toLocaleDateString('pt-BR');
+                }
+            } catch (e) {
+                console.error("Erro ao converter data:", e);
+            }
+            return dbDateStr;
+        }
+
+        // Fetch Dashboard Data from Backend API
+        async function fetchDashboardData() {
+            try {
+                // 1. Fetch statistics and lockdown state
+                const statsRes = await fetch('/admin/api/stats');
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    
+                    document.getElementById('stat-total').textContent = stats.total_perguntas;
+                    document.getElementById('stat-ia').textContent = stats.ia_count;
+                    document.getElementById('stat-local').textContent = stats.local_count;
+                    document.getElementById('stat-fallback').textContent = stats.fallback_count;
+                    document.getElementById('stat-attacks').textContent = stats.total_attacks;
+
+                    const ribbon = document.getElementById('status-ribbon');
+                    const statusText = document.getElementById('status-text');
+
+                    if (stats.lockdown_active) {
+                        ribbon.className = 'status-ribbon lockdown';
+                        statusText.textContent = 'LOCKDOWN ATIVADO (Ameaça Detectada)';
+                    } else {
+                        ribbon.className = 'status-ribbon';
+                        statusText.textContent = 'Online e Operante';
+                    }
+                }
+
+                // 2. Fetch conversation logs
+                const logsRes = await fetch('/admin/api/logs');
+                if (logsRes.ok) {
+                    const logs = await logsRes.json();
+                    const tbody = document.getElementById('table-logs');
+                    
+                    if (logs.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Nenhuma interação registrada ainda.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = logs.map(log => {
+                            let tagClass = 'fallback';
+                            let tagText = 'Fallback';
+                            if (log.tipo === 'local') {
+                                tagClass = 'local';
+                                tagText = 'Local';
+                            } else if (log.tipo === 'ia') {
+                                tagClass = 'ia';
+                                tagText = 'IA Gemini';
+                            }
+
+                            return `
+                                <tr>
+                                    <td class="time-col">${formatDateTime(log.timestamp)}</td>
+                                    <td>${escapeHTML(log.mensagem)}</td>
+                                    <td>${escapeHTML(log.resposta)}</td>
+                                    <td><span class="tag ${tagClass}">${tagText}</span></td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                // 3. Fetch security incidents
+                const incidentsRes = await fetch('/admin/api/incidentes');
+                if (incidentsRes.ok) {
+                    const incidents = await incidentsRes.json();
+                    const tbody = document.getElementById('table-incidents');
+                    
+                    if (incidents.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Nenhum incidente de segurança registrado.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = incidents.map(inc => {
+                            let tagClass = 'attack';
+                            let tagText = 'Ataque';
+                            if (inc.acao === 'lockdown_reset') {
+                                tagClass = 'reset';
+                                tagText = 'Recuperado';
+                            }
+
+                            return `
+                                <tr>
+                                    <td class="time-col">${formatDateTime(inc.timestamp)}</td>
+                                    <td style="font-family: monospace; font-size: 0.8rem; color: #ff6b6b;">${escapeHTML(inc.termo_bloqueado)}</td>
+                                    <td>${inc.ip_address || 'Localhost'}</td>
+                                    <td><span class="tag ${tagClass}">${tagText}</span></td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+
+            } catch (err) {
+                console.error("Erro ao sincronizar dashboard:", err);
+            }
+        }
+
+        // Helper to prevent HTML injections in tables
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Live Clock
+        setInterval(() => {
+            document.getElementById('status-time').textContent = new Date().toLocaleTimeString('pt-BR');
+        }, 10000);
+
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', () => {
+            createUniverse();
+            fetchDashboardData();
+            // Polling every 3 seconds for real-time dashboard updates
+            setInterval(fetchDashboardData, 3000);
+        });
+    </script>
+</body>
+</html>
