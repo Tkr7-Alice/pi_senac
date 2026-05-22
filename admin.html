@@ -199,11 +199,11 @@
                 if (statsRes.ok) {
                     const stats = await statsRes.json();
                     
-                    document.getElementById('stat-total').textContent = stats.total_perguntas;
-                    document.getElementById('stat-ia').textContent = stats.ia_count;
-                    document.getElementById('stat-local').textContent = stats.local_count;
-                    document.getElementById('stat-fallback').textContent = stats.fallback_count;
-                    document.getElementById('stat-attacks').textContent = stats.total_attacks;
+                    document.getElementById('stat-total').textContent = stats.total || 0;
+                    document.getElementById('stat-ia').textContent = stats.ia || 0;
+                    document.getElementById('stat-local').textContent = stats.local || 0;
+                    document.getElementById('stat-fallback').textContent = stats.fallback || 0;
+                    document.getElementById('stat-attacks').textContent = stats.attacks || 0;
 
                     const ribbon = document.getElementById('status-ribbon');
                     const statusText = document.getElementById('status-text');

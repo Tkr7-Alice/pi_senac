@@ -276,6 +276,30 @@ async function processInput() {
     }
 }
 
+async function carregarStats() {
+    try {
+        const response = await fetch('/admin/api/stats');
+        const data = await response.json();
+
+        const total = document.getElementById('stat-total');
+        const ia = document.getElementById('stat-ia');
+        const local = document.getElementById('stat-local');
+        const fallback = document.getElementById('stat-fallback');
+        const attacks = document.getElementById('stat-attacks');
+
+        if (total) total.textContent = data.total || 0;
+        if (ia) ia.textContent = data.ia || 0;
+        if (local) local.textContent = data.local || 0;
+        if (fallback) fallback.textContent = data.fallback || 0;
+
+        // MAIS IMPORTANTE
+        if (attacks) attacks.textContent = data.attacks || 0;
+
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+    }
+}
+
 // Event Listeners
 btnEnviar.addEventListener('click', processInput);
 inputTexto.addEventListener('keypress', (e) => {
@@ -287,6 +311,8 @@ inputTexto.addEventListener('keypress', (e) => {
 // Initialization
 window.addEventListener('DOMContentLoaded', () => {
     createUniverse();
+    carregarStats();
+    setInterval(carregarStats, 3000);
     
     // Força o carregamento prévio das vozes no navegador
     if ('speechSynthesis' in window) {

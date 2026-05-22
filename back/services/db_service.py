@@ -80,11 +80,11 @@ class DBService:
     def obter_estatisticas():
         """Retorna contadores de uso para o Dashboard."""
         stats = {
-            "total_perguntas": 0,
-            "ia_count": 0,
-            "local_count": 0,
-            "fallback_count": 0,
-            "total_ataques": 0
+            "total": 0,
+            "ia": 0,
+            "local": 0,
+            "fallback": 0,
+            "attacks": 0
         }
         try:
             conn = DBService.get_connection()
@@ -92,7 +92,7 @@ class DBService:
             
             # Total de conversas normais
             cursor.execute("SELECT COUNT(*) FROM conversas")
-            stats["total_perguntas"] = cursor.fetchone()[0]
+            stats["total"] = cursor.fetchone()[0]
             
             # Detalhamento por tipo de resposta
             cursor.execute("SELECT tipo, COUNT(*) FROM conversas GROUP BY tipo")
@@ -100,15 +100,15 @@ class DBService:
                 tipo = row["tipo"]
                 count = row[1]
                 if tipo == "ia":
-                    stats["ia_count"] = count
+                    stats["ia"] = count
                 elif tipo == "local":
-                    stats["local_count"] = count
+                    stats["local"] = count
                 elif tipo == "offline_fallback":
-                    stats["fallback_count"] = count
+                    stats["fallback"] = count
             
             # Total de ataques registrados
             cursor.execute("SELECT COUNT(*) FROM incidentes_seguranca WHERE acao = 'lockdown_active'")
-            stats["total_ataques"] = cursor.fetchone()[0]
+            stats["attacks"] = cursor.fetchone()[0]
             
             conn.close()
         except Exception as e:
