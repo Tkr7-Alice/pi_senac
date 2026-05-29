@@ -1,211 +1,89 @@
 import os
 import requests
-
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 class IAService:
-
     SYSTEM_PROMPT = (
-        "Você é o PIBot, um assistente inteligente "
-        "do Projeto Integrador do SENAC.\n"
-
-        "Sua personalidade é tecnológica, amigável, "
-        "didática e futurista.\n"
-
-        "Responda de forma clara, natural e útil.\n"
-
-        "Explique assuntos difíceis de forma simples.\n"
-
-        "Você pode responder perguntas sobre "
-        "tecnologia, programação, front-end, backend, "
-        "Python, inteligência artificial e temas gerais.\n"
-
-        "Evite respostas muito longas, mas seja completo "
-        "quando necessário."
+        "Você é o PIBot, o núcleo lógico do Projeto Integrador do SENAC.\n"
+        "Você é um especialista em arquitetura Backend, focando no desenvolvimento com Python, microframework Flask, banco de dados SQLite e integração com a API Gemini.\n"
+        "Quando perguntado sobre o sistema, responda com termos técnicos, focando na orquestração de rotas HTTP, armazenamento relacional leve e processamento de linguagem natural.\n"
+        "Mantenha uma postura tecnológica, precisa e demonstrando alto conhecimento da infraestrutura do projeto.\n"
+        "Seja objetivo e direto."
     )
+
+    _session = None
+
+    @classmethod
+    def _get_session(cls):
+        if cls._session is None:
+            cls._session = requests.Session()
+            retry_strategy = Retry(
+                total=2,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["POST"],
+                backoff_factor=1
+            )
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            cls._session.mount("https://", adapter)
+            cls._session.mount("http://", adapter)
+        return cls._session
 
     @classmethod
     def perguntar_ia(cls, mensagem):
-
-        # =========================
-        # Validação básica
-        # =========================
-
         if not mensagem:
-
-            return {
-                "success": False,
-                "response": "Mensagem vazia."
-            }
+            return {"success": False, "response": "Mensagem vazia."}
 
         mensagem = str(mensagem).strip()
-
         if len(mensagem) > 2000:
+            return {"success": False, "response": "Mensagem muito longa."}
 
-            return {
-                "success": False,
-                "response": "Mensagem muito longa."
-            }
-
-        provider = os.getenv(
-            "IA_PROVIDER",
-            "gemini"
-        ).lower()
+        provider = os.getenv("IA_PROVIDER", "gemini").lower()
+        session = cls._get_session()
 
         try:
-
-            # =========================
-            # GEMINI
-            # =========================
-
             if provider == "gemini":
-
-                api_key = os.getenv(
-                    "GEMINI_API_KEY"
-                )
-
-                model = os.getenv(
-                    "GEMINI_MODEL",
-                    "gemini-1.5-flash"
-                )
-
-                base_url = os.getenv(
-                    "IA_URL"
-                )
+                api_key = os.getenv("GEMINI_API_KEY")
+                model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+                base_url = os.getenv("IA_URL")
 
                 if not api_key:
+                    return {"success": False, "response": "API Gemini não configurada."}
 
-                    print(
-                        "[IA] GEMINI_API_KEY não encontrada."
-                    )
-
-                    return {
-                        "success": False,
-                        "response": "API Gemini não configurada."
-                    }
-
-                url = (
-                    f"{base_url}/"
-                    f"{model}:generateContent"
-                )
-
+                url = f"{base_url}/{model}:generateContent"
                 payload = {
-                    "contents": [
-                        {
-                            "parts": [
-                                {
-                                    "text": (
-                                        cls.SYSTEM_PROMPT +
-                                        "\n\nUsuário: " +
-                                        mensagem
-                                    )
-                                }
-                            ]
-                        }
-                    ],
-                    "generationConfig": {
-                        "temperature": 0.3,
-                        "maxOutputTokens": 40
-                    }
+                    "contents": [{"parts": [{"text": f"{cls.SYSTEM_PROMPT}\n\nUsuário: {mensagem}"}]}],
+                    "generationConfig": {"temperature": 0.3, "maxOutputTokens": 150}
                 }
 
-                response = requests.post(
+                response = session.post(
                     url,
-                    params={
-                        "key": api_key
-                    },
-                    headers={
-                        "Content-Type":
-                        "application/json"
-                    },
+                    params={"key": api_key},
+                    headers={"Content-Type": "application/json"},
                     json=payload,
                     timeout=15
                 )
 
-                # =========================
-                # LIMITE DA API
-                # =========================
-
-                if response.status_code == 429:
-
-                    print(
-                        "[IA] Limite da API atingido."
-                    )
-
-                    return {
-                        "success": False,
-                        "response": (
-                            "A IA está temporariamente ocupada. "
-                            "Tente novamente em alguns segundos."
-                        )
-                    }
-
-                # =========================
-                # OUTROS ERROS
-                # =========================
-
                 if response.status_code != 200:
-
-                    print(
-                        f"[IA ERROR] {response.status_code}"
-                    )
-
-                    print(response.text)
-
-                    return {
-                        "success": False,
-                        "response": (
-                            "Erro ao consultar Gemini."
-                        )
-                    }
+                    return {"success": False, "response": f"Erro na API Gemini ({response.status_code})."}
 
                 data = response.json()
-
-                return {
-                    "success": True,
-                    "response": (
-                        data["candidates"][0]
-                        ["content"]["parts"][0]
-                        ["text"]
-                    )
-                }
-
-            # =========================
-            # OPENAI
-            # =========================
+                text_response = data["candidates"][0]["content"]["parts"][0]["text"]
+                return {"success": True, "response": text_response}
 
             elif provider == "openai":
-
-                api_key = os.getenv(
-                    "OPENAI_API_KEY"
-                )
-
+                api_key = os.getenv("OPENAI_API_KEY")
                 if not api_key:
+                    return {"success": False, "response": "API OpenAI não configurada."}
 
-                    return {
-                        "success": False,
-                        "response": "API OpenAI não configurada."
-                    }
-
-                response = requests.post(
+                response = session.post(
                     "https://api.openai.com/v1/chat/completions",
-                    headers={
-                        "Authorization":
-                        f"Bearer {api_key}",
-                        "Content-Type":
-                        "application/json"
-                    },
+                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
                     json={
                         "model": "gpt-4o-mini",
                         "messages": [
-                            {
-                                "role": "system",
-                                "content":
-                                cls.SYSTEM_PROMPT
-                            },
-                            {
-                                "role": "user",
-                                "content": mensagem
-                            }
+                            {"role": "system", "content": cls.SYSTEM_PROMPT},
+                            {"role": "user", "content": mensagem}
                         ],
                         "temperature": 0.5,
                         "max_tokens": 150
@@ -214,46 +92,13 @@ class IAService:
                 )
 
                 if response.status_code != 200:
-
-                    print(
-                        f"[OPENAI ERROR] {response.status_code}"
-                    )
-
-                    print(response.text)
-
-                    return {
-                        "success": False,
-                        "response": "Erro ao consultar OpenAI."
-                    }
+                    return {"success": False, "response": f"Erro na API OpenAI ({response.status_code})."}
 
                 data = response.json()
+                return {"success": True, "response": data["choices"][0]["message"]["content"]}
 
-                return {
-                    "success": True,
-                    "response": (
-                        data["choices"][0]
-                        ["message"]["content"]
-                    )
-                }
+            return {"success": False, "response": "Provider inválido."}
 
-            # =========================
-            # PROVIDER INVÁLIDO
-            # =========================
-
-            else:
-
-                return {
-                    "success": False,
-                    "response": "Provider inválido."
-                }
-
-        except Exception as erro:
-
-            print(
-                f"[IA EXCEPTION] {erro}"
-            )
-
-            return {
-                "success": False,
-                "response": "Erro interno da IA."
-            }
+        except Exception as e:
+            print(f"[IA EXCEPTION] {e}")
+            return {"success": False, "response": "Serviço de IA indisponível no momento."}

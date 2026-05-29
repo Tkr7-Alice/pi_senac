@@ -7,6 +7,7 @@ const horaEl = document.getElementById('hora');
 const mediaContainer = document.getElementById('media-container');
 const mediaImage = document.getElementById('media-image');
 const mediaVideo = document.getElementById('media-video');
+const systemStatus = document.getElementById('system-status');
 
 // Generate Stars
 function createUniverse() {
@@ -69,8 +70,15 @@ function falarVoz(texto) {
             fala.voice = selectedVoice;
         }
 
-        fala.onstart = () => speaking = true;
-        fala.onend = () => speaking = false;
+        fala.onstart = () => {
+            speaking = true;
+            roboAvatar.classList.add('talking');
+        };
+
+        fala.onend = () => {
+            speaking = false;
+            roboAvatar.classList.remove('talking');
+        };
 
         speechSynthesis.speak(fala);
     }
@@ -78,19 +86,71 @@ function falarVoz(texto) {
 
 // Typewriter Effect
 let typewriterInterval;
+let loadingInterval;
 function escreverTexto(texto, callback) {
     clearInterval(typewriterInterval);
-    responseBox.textContent = "";
+    
+    roboAvatar.classList.remove('talking'); 
+
+    responseBox.innerHTML = '<span class="typing-text"></span><span class="cursor">|</span>';
+
+    roboAvatar.classList.add('respondendo-bot');
+
+    systemStatus.classList.add('respondendo');
+    document.querySelector('.bot-area').classList.add('respondendo');
+
+    systemStatus.innerHTML = `
+        <span class="status-ping"></span>
+        <span id="status-text-content">PROCESSANDO RESPOSTA...</span>
+    `;
+
+    const typingText = responseBox.querySelector('.typing-text');
+
     let i = 0;
 
     typewriterInterval = setInterval(() => {
-        responseBox.textContent += texto.charAt(i);
+        typingText.textContent += texto.charAt(i);
+
+        // efeito pequeno de brilho enquanto escreve
+        responseBox.classList.add('respondendo');
+
         i++;
+
         if (i >= texto.length) {
             clearInterval(typewriterInterval);
+
+            responseBox.classList.remove('respondendo');
+
+            systemStatus.classList.remove('respondendo');
+            document.querySelector('.bot-area').classList.remove('respondendo');
+
+            systemStatus.innerHTML = `
+                <span class="status-ping"></span>
+                <span id="status-text-content">ONLINE E OPERANTE</span>
+            `;
+
             if (callback) callback();
         }
-    }, 30); // Speed of typing
+    }, 22);
+}
+
+function iniciarLoading() {
+    clearInterval(loadingInterval);
+
+    roboAvatar.classList.add('thinking');
+
+    let pontos = 0;
+
+    loadingInterval = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        responseBox.textContent =
+            "PIBot analisando solicitação" + ".".repeat(pontos);
+    }, 500);
+}
+
+function pararLoading() {
+    clearInterval(loadingInterval);
+    roboAvatar.classList.remove('thinking');
 }
 
 // Media Controller
@@ -144,32 +204,38 @@ function triggerSecurityScene() {
 // Intelligence Logic
 const intents = [
     {
-        keywords: ["python"],
-        response: "Python é uma linguagem simples e poderosa usada em automação, IA e backend.",
+        keywords: ["python", "linguagem"],
+        response: "Python é a linguagem principal da nossa arquitetura. Ela processa as requisições HTTP, realiza o acesso ao banco de dados SQLite e orquestra a comunicação assíncrona com a API do Gemini.",
         mediaType: "image",
         mediaSrc: "assets/images/python.png"
     },
     {
-        keywords: ["backend", "back-end", "back end"],
-        response: "Backend funciona como o cérebro do sistema.",
+        keywords: ["backend", "back-end", "back end", "servidor", "flask"],
+        response: "Nosso backend opera como uma API RESTful utilizando o microframework Flask. Ele recebe chamadas do frontend, faz o tratamento e sanitização de dados e gerencia o fluxo de respostas de forma otimizada.",
         mediaType: "image",
         mediaSrc: "assets/images/backend.png"
     },
     {
-        keywords: ["ia", "inteligência artificial", "inteligencia artificial", "ai"],
-        response: "Inteligência Artificial permite que sistemas aprendam com dados e tomem decisões automatizadas para resolver problemas complexos.",
+        keywords: ["banco de dados", "sqlite", "memoria", "memória", "dados"],
+        response: "A persistência local é feita em SQLite, um banco de dados relacional embutido. Ele armazena logs de interações em tempo real e controla as métricas de requisições, sem a sobrecarga de um servidor de banco dedicado.",
+        mediaType: "none",
+        mediaSrc: ""
+    },
+    {
+        keywords: ["ia", "inteligência artificial", "inteligencia artificial", "ai", "gemini", "api"],
+        response: "A Inteligência Artificial é processada via integração com a API Gemini. O backend converte a requisição do usuário em um JSON estruturado, envia ao modelo NLP e retorna a resposta gerada para renderização na interface.",
         mediaType: "image",
         mediaSrc: "assets/images/ia.png"
     },
     {
         keywords: ["senac", "projeto", "pi"],
-        response: "O Projeto Integrador do SENAC é a oportunidade de unir teoria e prática, criando soluções reais e tecnológicas.",
+        response: "Este Projeto Integrador consolida conceitos avançados de engenharia de software, apresentando uma arquitetura escalável focada no fluxo entre frontend interativo, rotas backend com Python e integração com serviços de IA.",
         mediaType: "none",
         mediaSrc: ""
     },
     {
         keywords: ["oi", "olá", "ola", "bom dia", "boa noite"],
-        response: "Olá. Bem-vindos à nossa apresentação. Como posso demonstrar minhas funções hoje?",
+        response: "Servidor online. Rotas HTTP ativas e escutando na porta configurada. Como posso demonstrar nossa arquitetura backend hoje?",
         mediaType: "none",
         mediaSrc: ""
     }
@@ -189,8 +255,11 @@ async function processInput() {
     }
 
     try {
+        iniciarLoading();
         // Envia a mensagem para o backend. Se a página for aberta diretamente como arquivo, direciona para o localhost:5000
-        const host = (window.location.protocol === 'file:' || window.location.origin === 'null') ? 'http://127.0.0.1:5000' : '';
+        const host = (window.location.protocol === 'file:' || window.location.origin === 'null') 
+            ? 'http://127.0.0.1:5000' 
+            : '';
         const response = await fetch(`${host}/perguntar`, {
             method: 'POST',
             headers: {
@@ -204,6 +273,7 @@ async function processInput() {
         }
 
         const data = await response.json();
+        pararLoading();
 
         // 1. Processar Ação de Reset (Recuperação do Lockdown)
         if (data.action === "reset") {
@@ -246,6 +316,7 @@ async function processInput() {
         showMedia(data.mediaType, data.mediaSrc);
 
     } catch (error) {
+        pararLoading();
         console.error("Erro ao se conectar ao backend:", error);
 
         // Fallback local caso o backend esteja offline

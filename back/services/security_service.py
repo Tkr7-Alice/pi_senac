@@ -1,7 +1,14 @@
 import re
+from services.db_service import DBService
 
 class SecurityService:
     _lockdown_active = False
+    _malicious_patterns = [
+        re.compile(r"script", re.IGNORECASE),
+        re.compile(r"onerror\s*=", re.IGNORECASE),
+        re.compile(r"javascript:", re.IGNORECASE),
+        re.compile(r"iframe", re.IGNORECASE)
+    ]
 
     @classmethod
     def is_lockdown_active(cls):
@@ -17,24 +24,11 @@ class SecurityService:
 
     @classmethod
     def check_input_safety(cls, text, ip_address=None):
-        """
-        Verifica se a entrada é segura.
-        Retorna um dicionário com os campos:
-        - safe: bool
-        - resposta: str ou None
-        - trigger_security_scene: bool
-        - action: str ou None
-        """
         if not text:
             return {"safe": True, "resposta": None, "trigger_security_scene": False, "action": None}
 
-        # Normaliza a entrada
         normalized = text.strip().lower()
 
-        # Importa dinamicamente para evitar imports circulares
-        from services.db_service import DBService
-
-        # Comando especial para desativar o lockdown
         if normalized == "desativar lockdown":
             if cls._lockdown_active:
                 cls.deactivate_lockdown()
@@ -45,15 +39,13 @@ class SecurityService:
                     "trigger_security_scene": False,
                     "action": "reset"
                 }
-            else:
-                return {
-                    "safe": True,
-                    "resposta": "O sistema já está operando normalmente. Protocolo de segurança inativo.",
-                    "trigger_security_scene": False,
-                    "action": None
-                }
+            return {
+                "safe": True,
+                "resposta": "O sistema já está operando normalmente.",
+                "trigger_security_scene": False,
+                "action": None
+            }
 
-        # Se o sistema já estiver em lockdown
         if cls._lockdown_active:
             return {
                 "safe": False,
@@ -62,16 +54,8 @@ class SecurityService:
                 "action": None
             }
 
-        # Detecção de assinaturas maliciosas (Script Injection)
-        malicious_patterns = [
-            r"script",
-            r"onerror\s*=",
-            r"javascript:",
-            r"iframe"
-        ]
-
-        for pattern in malicious_patterns:
-            if re.search(pattern, normalized):
+        for pattern in cls._malicious_patterns:
+            if pattern.search(normalized):
                 cls.activate_lockdown()
                 DBService.registrar_incidente(text, ip_address, "lockdown_active")
                 return {
