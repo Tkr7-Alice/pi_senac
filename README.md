@@ -1,34 +1,70 @@
-PIBot v2 🤖
-Projeto Integrador SENAC desenvolvido com Flask, Python, SQLite e integração com IA Gemini.
+# 🤖 PIBot v2
 
-🚀 Tecnologias
-Python
-Frasco
-SQLite
-HTML
-CSS
-JavaScript
-API Gemini
-📁 Estrutura
+> Assistente virtual inteligente desenvolvido para o **Projeto Integrador SENAC** utilizando **Flask, Python, SQLite** e integração com **Google Gemini AI**.
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+* **Python**
+* **Flask**
+* **SQLite**
+* **HTML5**
+* **CSS3**
+* **JavaScript**
+* **Google Gemini API**
+
+---
+
+## 📁 Estrutura do Projeto
+
+```text
 pi_senac/
 │
 ├── back/
+│   ├── routes/
+│   ├── services/
+│   └── app.py
+│
 ├── assets/
+│   └── images/
+│
 ├── scripts/
 ├── styles/
+│
 ├── index.html
 ├── admin.html
+├── requirements.txt
 └── README.md
-⚙️ Como executar
-1. Clonar o projeto
-git clone SEU_LINK_GITHUB
-2. Entre na pasta
-cd pi_senac
-3. Instale as responsabilidades
-pip install -r requirements.txt
-4. Configure o arquivo.env
-Dentro da massa back/:
+```
 
+---
+
+## ⚙️ Como Executar o Projeto
+
+### 1️⃣ Clonar o repositório
+
+```bash
+git clone https://github.com/Tkr7-Alice/pi_senac.git
+```
+
+### 2️⃣ Entrar na pasta do projeto
+
+```bash
+cd pi_senac
+```
+
+### 3️⃣ Instalar as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4️⃣ Configurar o arquivo `.env`
+
+Crie o arquivo `.env` dentro da pasta `back/`.
+
+```env
 IA_PROVIDER=gemini
 
 GEMINI_API_KEY=SUA_CHAVE
@@ -36,55 +72,68 @@ GEMINI_API_KEY=SUA_CHAVE
 GEMINI_MODEL=gemini-2.0-flash
 
 IA_URL=https://generativelanguage.googleapis.com/v1beta/models
-5. Execute o projeto
+```
+
+### 5️⃣ Executar a aplicação
+
+```bash
 python app.py
-🌐 Rotas principais
-Página	URL
-Chatbot	/
-Painel	/admin.html
-Conversas JSON	/api/conversas
-Registros	/admin/api/logs
-Estatísticas	/admin/api/stats
-🔒 Segurança
+```
+
+A aplicação ficará disponível em:
+
+```text
+http://localhost:5000
+```
+
+---
+
+## 🌐 Rotas Principais
+
+| Funcionalidade        | Endpoint                |
+| --------------------- | ----------------------- |
+| Chat Principal        | `/`                     |
+| Painel Administrativo | `/admin`                |
+| Conversas JSON        | `/api/conversas`        |
+| Estatísticas          | `/admin/api/stats`      |
+| Logs                  | `/admin/api/logs`       |
+| Incidentes            | `/admin/api/incidentes` |
+
+---
+
+## 🔒 Recursos de Segurança
+
 O sistema possui:
 
-Validação de entrada
-base contra XSS
-Registro de incidentes
-Monitoramento de atividades
-👨‍💻 Projeto SENAC
-Projeto desenvolvido para fins acadêmicos no SENAC.
+* ✅ Validação de entrada
+* ✅ Proteção básica contra XSS
+* ✅ Registro de incidentes
+* ✅ Sistema de Lockdown
+* ✅ Monitoramento de atividades suspeitas
+* ✅ Histórico de conversas
 
-Lançamentos
-Nenhuma versão publicada
-Criar uma nova versão
-Pacotes
-Nenhum pacote publicado.
-Publique seu primeiro pacote.
-Colaboradores
-1
-@Tkr7-Alice
-Tkr7-Alice Thomas
-Línguas
-CSS
-34,4%
- 
-HTML
-25,3%
- 
-Python
-22,3%
- 
-JavaScript
-18,0%
-Fluxos de trabalho sugeridos
-Com base na sua pilha de tecnologias.
-Logotipo do Webpack
-Webpack
-Crie um projeto NodeJS com npm e webpack.
-Logotipo Deno
-Deno
-Teste seu projeto Deno
-Pacote Python usando o logotipo do Anaconda
-Pacote Python usando Anaconda
-Crie e teste um pacote Python em várias versões do Python usando o Anaconda para gerenciamento de pacotes
+---
+
+## 📊 Funcionalidades
+
+* Chat inteligente com IA Gemini
+* Respostas locais para perguntas frequentes
+* Dashboard administrativo
+* Estatísticas em tempo real
+* Registro de conversas
+* Registro de incidentes de segurança
+* Modo de contingência (fallback offline)
+
+---
+
+## 👨‍💻 Desenvolvedor
+
+**Thomas Kirmeier**
+
+Projeto desenvolvido para fins acadêmicos no **SENAC**.
+
+---
+
+## 📄 Licença
+
+Este projeto foi desenvolvido exclusivamente para fins educacionais e acadêmicos.
