@@ -69,7 +69,7 @@ IA_PROVIDER=gemini
 
 GEMINI_API_KEY=SUA_CHAVE
 
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
 
 IA_URL=https://generativelanguage.googleapis.com/v1beta/models
 ```
