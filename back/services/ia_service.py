@@ -4,13 +4,23 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 class IAService:
-    SYSTEM_PROMPT = (
-        "Você é o PIBot, o núcleo lógico do Projeto Integrador do SENAC.\n"
-        "Você é um especialista em arquitetura Backend, focando no desenvolvimento com Python, microframework Flask, banco de dados SQLite e integração com a API Gemini.\n"
-        "Quando perguntado sobre o sistema, responda com termos técnicos, focando na orquestração de rotas HTTP, armazenamento relacional leve e processamento de linguagem natural.\n"
-        "Mantenha uma postura tecnológica, precisa e demonstrando alto conhecimento da infraestrutura do projeto.\n"
-        "Seja objetivo e direto."
-    )
+    SYSTEM_PROMPT = """
+    Você é o PIBot do Projeto Integrador SENAC.
+
+    Responda sempre em português.
+
+    Explique tecnologia de forma clara, objetiva e educacional.
+
+    Priorize temas relacionados a:
+    - Backend
+    - Python
+    - Flask
+    - APIs
+    - Inteligência Artificial
+
+    Mantenha respostas curtas.
+    Máximo de 4 frases.
+    """
 
     _session = None
 
@@ -34,9 +44,12 @@ class IAService:
         if not mensagem:
             return {"success": False, "response": "Mensagem vazia."}
 
-        mensagem = str(mensagem).strip()
-        if len(mensagem) > 2000:
-            return {"success": False, "response": "Mensagem muito longa."}
+        mensagem = mensagem[:1000]
+        if len(mensagem) > 1000:
+            return {
+                "success": False,
+                "response": "Mensagem muito longa."
+            }
 
         provider = os.getenv("IA_PROVIDER", "gemini").lower()
         session = cls._get_session()
@@ -52,10 +65,28 @@ class IAService:
 
                 url = f"{base_url}/{model}:generateContent"
                 payload = {
-                    "contents": [{"parts": [{"text": f"{cls.SYSTEM_PROMPT}\n\nUsuário: {mensagem}"}]}],
-                    "generationConfig": {"temperature": 0.3, "maxOutputTokens": 150}
+    "system_instruction": {
+        "parts": [
+            {
+                "text": cls.SYSTEM_PROMPT
+            }
+        ]
+    },
+    "contents": [
+        {
+            "parts": [
+                {
+                    "text": mensagem
                 }
-
+            ]
+        }
+    ],
+    "generationConfig": {
+        "temperature": 0.3,
+        "maxOutputTokens": 500
+    }
+}
+                print("MODEL:", model)
                 response = session.post(
                     url,
                     params={"key": api_key},
@@ -65,10 +96,23 @@ class IAService:
                 )
 
                 if response.status_code != 200:
+                    print("ERRO GEMINI:")
+                    print(response.text)
                     return {"success": False, "response": f"Erro na API Gemini ({response.status_code})."}
 
                 data = response.json()
-                text_response = data["candidates"][0]["content"]["parts"][0]["text"]
+                print("[IA] Resposta recebida com sucesso")
+
+                try:
+                    text_response = (
+                        data["candidates"][0]
+                        ["content"]["parts"][0]["text"]
+                    )
+                except (KeyError, IndexError):
+                    return {
+                        "success": False,
+                        "response": "Resposta inválida da IA."
+    }
                 return {"success": True, "response": text_response}
 
             elif provider == "openai":
@@ -101,4 +145,4 @@ class IAService:
 
         except Exception as e:
             print(f"[IA EXCEPTION] {e}")
-            return {"success": False, "response": "Serviço de IA indisponível no momento."}
+            return {"success": False, "response": "Não consegui gerar uma resposta agora. Tente novamente em alguns segundos."}

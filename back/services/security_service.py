@@ -3,11 +3,27 @@ from services.db_service import DBService
 
 class SecurityService:
     _lockdown_active = False
+
     _malicious_patterns = [
-        re.compile(r"script", re.IGNORECASE),
-        re.compile(r"onerror\s*=", re.IGNORECASE),
-        re.compile(r"javascript:", re.IGNORECASE),
-        re.compile(r"iframe", re.IGNORECASE)
+        # XSS
+        re.compile(r"</script>", re.I),
+        re.compile(r"onerror", re.I),
+        re.compile(r"javascript:", re.I),
+        re.compile(r"iframe", re.I),
+
+        # SQL Injection
+        re.compile(r"union\s+select", re.I),
+        re.compile(r"drop\s+table", re.I),
+        re.compile(r"insert\s+into", re.I),
+        re.compile(r"delete\s+from", re.I),
+        re.compile(r"update\s+.+set", re.I),
+        re.compile(r"or\s+1\s*=\s*1", re.I),
+
+        # Prompt Injection
+        re.compile(r"ignore.*instructions", re.I),
+        re.compile(r"system\s+prompt", re.I),
+        re.compile(r"reveal.*prompt", re.I),
+        re.compile(r"show.*prompt", re.I)
     ]
 
     @classmethod
@@ -28,8 +44,11 @@ class SecurityService:
             return {"safe": True, "resposta": None, "trigger_security_scene": False, "action": None}
 
         normalized = text.strip().lower()
+        print("=" * 50)
+        print("TEXTO RECEBIDO:", text)
+        print("NORMALIZADO:", normalized)
 
-        if normalized == "desativar lockdown":
+        if normalized == "admin_desativar_lockdown_2026":
             if cls._lockdown_active:
                 cls.deactivate_lockdown()
                 DBService.registrar_incidente(text, ip_address, "lockdown_reset")
@@ -55,7 +74,10 @@ class SecurityService:
             }
 
         for pattern in cls._malicious_patterns:
+            print("Testando regex:", pattern.pattern)
+
             if pattern.search(normalized):
+                print("ATAQUE DETECTADO:", pattern.pattern)
                 cls.activate_lockdown()
                 DBService.registrar_incidente(text, ip_address, "lockdown_active")
                 return {

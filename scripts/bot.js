@@ -188,14 +188,20 @@ function triggerSecurityScene() {
 
     escreverTexto("ATENÇÃO. Tentativa de intrusão detectada.", () => {
         setTimeout(() => {
-            roboAvatar.innerText = "🧳🏃";
+            // Change avatar to a shield instead of running away
+            const head = roboAvatar.querySelector('.robo-head');
+            if(head) head.style.display = 'none';
+            const halo = roboAvatar.querySelector('.robo-halo');
+            if(halo) halo.style.borderColor = 'red';
+            
             roboAvatar.classList.remove('robo');
             roboAvatar.classList.add('run-away');
+            roboAvatar.innerHTML = '<div style="font-size: 80px; text-shadow: 0 0 20px red;">🛡️</div>';
 
             setTimeout(() => {
-                escreverTexto("Sistema protegido. PIBot abandonou a missão.");
+                escreverTexto("Protocolo Escudo Ativado. Bloqueando acessos.");
                 document.querySelector('.status-indicator').innerHTML = '<span class="dot" style="background:red;box-shadow:0 0 10px red;"></span> Lockdown Ativado';
-            }, 10000);
+            }, 2000);
 
         }, 1500);
     });
@@ -278,9 +284,35 @@ async function processInput() {
         // 1. Processar Ação de Reset (Recuperação do Lockdown)
         if (data.action === "reset") {
             document.body.classList.remove('alert-mode');
-            roboAvatar.innerText = "🤖";
             roboAvatar.classList.remove('run-away');
             roboAvatar.classList.add('robo');
+            
+            // Reconstruct the bot HTML
+            roboAvatar.innerHTML = `
+                <div class="holo-base">
+                    <div class="base-ring"></div>
+                    <div class="base-ring delay"></div>
+                    <div class="base-center"></div>
+                </div>
+                <div class="robo-halo"></div>
+                <div class="robo-head">
+                    <div class="antenna">
+                        <div class="antenna-stick"></div>
+                        <div class="antenna-ball"></div>
+                    </div>
+                    <div class="ear left-ear"></div>
+                    <div class="ear right-ear"></div>
+                    <div class="face">
+                        <div class="visor"></div>
+                        <div class="eyes">
+                            <div class="eye left-eye"></div>
+                            <div class="eye right-eye"></div>
+                        </div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+            `;
+
             document.querySelector('.status-indicator').innerHTML = '<span class="dot"></span> Online e Operante';
             
             escreverTexto(data.resposta);
